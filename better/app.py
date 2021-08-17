@@ -112,10 +112,9 @@ class Users(JsonableList):
             return users_by_id[0]
 
     def delete_user(self, user_id: int) -> None:
-        user = self.get_user(user_id)
-
-        if user is not None:
-            self.users.remove(user)
+        for idx, u in enumerate(self.users):
+            if u.id == user_id:
+                del self.users[idx]
 
     def add_todo_to_user(self, user_id: int, todo: Todo) -> None:
         for idx, u in enumerate(self.users):
