@@ -5,9 +5,7 @@ import time
 import requests
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-
+def get_api_endpoint() -> str:
     api_host: str = os.environ.get('API_HOST')
     api_port: str = os.environ.get('API_PORT')
 
@@ -16,8 +14,14 @@ def main() -> None:
             'You must specify an API host and port via API_HOST and API_PORT')
         exit(1)
 
-    api_endpoint = f'http://{api_host}:{api_port}'
-    users_endpoint = f'{api_endpoint}/users'
+    return f'http://{api_host}:{api_port}'
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO)
+
+    todos_api_endpoint = get_api_endpoint()
+    users_endpoint = f'{todos_api_endpoint}/users'
 
     while True:
         res = requests.get(users_endpoint)
