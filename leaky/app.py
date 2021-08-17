@@ -7,7 +7,12 @@ app = Flask(__name__)
 
 
 class Jsonable(object):
-    def to_dict(self) -> dict:
+    def serialize(self) -> dict:
+        pass
+
+
+class JsonableList(object):
+    def serialize(self) -> List[dict]:
         pass
 
 
@@ -17,7 +22,7 @@ class Todo(Jsonable):
         self.task = task
         self.done = done
 
-    def to_dict(self) -> dict:
+    def serialize(self) -> dict:
         return {'id': self.id, 'task': self.task, 'done': self.done}
 
 
@@ -54,8 +59,12 @@ class User(Jsonable):
         self.name = name
         self.todos = todos
 
-    def to_dict(self) -> dict:
-        return {'id': self.id, 'name': self.name, 'todos': [todo.to_dict() for todo in self.todos]}
+    def __del__(self):
+        if self.todos != []:
+            self.todos = []
+
+    def serialize(self) -> dict:
+        return {'id': self.id, 'name': self.name, 'todos': [todo.serialize() for todo in self.todos]}
 
 
 def deserialize_user(u: dict) -> Todo:
@@ -85,7 +94,37 @@ def deserialize_user(u: dict) -> Todo:
     return User(id=id, name=name, todos=todos)
 
 
-USERS: List[User] = []
+class Users(JsonableList):
+    def __init__(self, users: List[User] = []) -> None:
+        self.users = users
+
+    def add_user(self, user: User) -> None:
+        for u in self.users:
+            if u.id == user.id:
+                raise AttributeError(f'a user with ID {u.id} already exists')
+
+        self.users.append(user)
+
+    def get_user(self, user_id: int) -> User:
+        users_by_id = list(filter(lambda u: u.id == user_id, self.users))
+
+        if len(users_by_id) == 0:
+            return None
+        elif len(users_by_id) > 1:
+            raise AttributeError(f'multiple users with the ID {user_id}')
+        else:
+            return users_by_id[0]
+
+    def delete_user(self, user_id: int) -> None:
+        for idx, u in enumerate(self.users):
+            if u.id == user_id:
+                del self.users[idx]
+
+    def serialize(self) -> List[dict]:
+        return [user.serialize() for user in self.users]
+
+
+USERS: Users = Users()
 
 
 def response_with_location_header(user_id: int) -> Response:
@@ -95,29 +134,10 @@ def response_with_location_header(user_id: int) -> Response:
     return res
 
 
-def create_user(user: User) -> None:
-    for u in USERS:
-        if u.id == user.id:
-            raise AttributeError(f'a user with ID {u.id} already exists')
-
-    USERS.append(user)
-
-
-def get_user(user_id: int) -> User:
-    users = list(filter(lambda u: u.id == user_id, USERS))
-
-    if len(users) == 0:
-        return None
-    elif len(users) > 1:
-        raise AttributeError(f'multiple users with the ID {user_id}')
-    else:
-        return users[0]
-
-
 @app.route('/users', methods=('GET', 'POST'))
 def users_endpoint() -> Response:
     if request.method == 'GET':
-        return jsonify([user.to_dict() for user in USERS])
+        return jsonify(USERS.serialize())
     elif request.method == 'POST':
         if request.is_json:
             content = request.get_json()
@@ -126,7 +146,7 @@ def users_endpoint() -> Response:
                 new_user = deserialize_user(content)
 
                 try:
-                    create_user(new_user)
+                    USERS.add_user(new_user)
                     return response_with_location_header(new_user.id)
                 except AttributeError as e:
                     return Response(status=409, response=str(e))
@@ -140,15 +160,15 @@ def users_endpoint() -> Response:
 @app.route('/users/<int:user_id>', methods=('GET', 'DELETE'))
 def user_by_id(user_id: int) -> Response:
     try:
-        user = get_user(user_id)
+        user = USERS.get_user(user_id)
 
         if user is None:
             return Response(status=404)
         else:
             if request.method == 'GET':
-                return jsonify(user.to_dict())
+                return jsonify(user.serialize())
             elif request.method == 'DELETE':
-                USERS.remove(user)
+                USERS.delete_user(user.id)
                 return Response(status=200)
 
     except AttributeError as e:
