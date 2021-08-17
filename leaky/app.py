@@ -42,6 +42,8 @@ def deserialize_todo(t: dict) -> Todo:
         done = False
     elif not isinstance(t['done'], bool):
         raise TypeError('done field must be a Boolean')
+    else:
+        done = bool(t['done'])
 
     return Todo(id=id, task=task, done=done)
 
