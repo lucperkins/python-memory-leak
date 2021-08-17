@@ -54,6 +54,10 @@ class User(Jsonable):
         self.name = name
         self.todos = todos
 
+    def __del__(self) -> None:
+        if self.todos != []:
+            self.todos = []
+
     def to_dict(self) -> dict:
         return {'id': self.id, 'name': self.name, 'todos': [todo.to_dict() for todo in self.todos]}
 
