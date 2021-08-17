@@ -105,8 +105,19 @@ def create_user(user: User) -> None:
     USERS.append(user)
 
 
+def get_user(user_id: int) -> User:
+    users = list(filter(lambda u: u.id == user_id, USERS))
+
+    if len(users) == 0:
+        return None
+    elif len(users) > 1:
+        raise AttributeError(f'multiple users with the ID {user_id}')
+    else:
+        return users[0]
+
+
 @app.route('/users', methods=('GET', 'POST'))
-def users_endpoint():
+def users_endpoint() -> Response:
     if request.method == 'GET':
         return jsonify([user.to_dict() for user in USERS])
     elif request.method == 'POST':
@@ -126,6 +137,24 @@ def users_endpoint():
                 return Response(status=400, response=str(e))
         else:
             return Response(status=405, response='no JSON supplied')
+
+
+@app.route('/users/<int:user_id>', methods=('GET', 'DELETE'))
+def user_by_id(user_id: int) -> Response:
+    try:
+        user = get_user(user_id)
+
+        if user is None:
+            return Response(status=404)
+        else:
+            if request.method == 'GET':
+                return jsonify(user.to_dict())
+            elif request.method == 'DELETE':
+                USERS.remove(user)
+                return Response(status=200)
+
+    except AttributeError as e:
+        return Response(status=409, response=str(e))
 
 
 def main() -> None:
