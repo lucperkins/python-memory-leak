@@ -11,7 +11,7 @@ from urllib3.util.retry import Retry
 class Client(object):
     def __init__(self, root_url: str) -> None:
         sesh = requests.Session()
-        retries = Retry(total=10)
+        retries = Retry(total=10, backoff_factor=0.5)
         sesh.mount('http://', HTTPAdapter(max_retries=retries))
 
         self.session = sesh
