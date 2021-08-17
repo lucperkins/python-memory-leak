@@ -120,18 +120,16 @@ class Users(JsonableList):
             if u.id == user_id:
                 del self.users[idx]
 
+    def add_todo_to_user(self, user_id: int, todo: Todo) -> None:
+        for idx, u in enumerate(self.users):
+            if u.id == user_id:
+                self.users[idx].todos.append(todo)
+
     def serialize(self) -> List[dict]:
         return [user.serialize() for user in self.users]
 
 
 USERS: Users = Users()
-
-
-def response_with_location_header(user_id: int) -> Response:
-    res = Response(status=202)
-    location = f'/users/{user_id}'
-    res.headers['Location'] = location
-    return res
 
 
 @app.route('/users', methods=('GET', 'POST'))
@@ -147,7 +145,11 @@ def users_endpoint() -> Response:
 
                 try:
                     USERS.add_user(new_user)
-                    return response_with_location_header(new_user.id)
+                    res = Response(status=202)
+                    location = f'/users/{new_user.id}'
+                    res.headers['Location'] = location
+                    return res
+
                 except AttributeError as e:
                     return Response(status=409, response=str(e))
 
@@ -170,6 +172,69 @@ def user_by_id(user_id: int) -> Response:
             elif request.method == 'DELETE':
                 USERS.delete_user(user.id)
                 return Response(status=200)
+
+    except AttributeError as e:
+        return Response(status=409, response=str(e))
+
+
+@app.route('/users/<int:user_id>/todos', methods=('GET', 'POST'))
+def user_todos_by_id(user_id: int) -> Response:
+    try:
+        user = USERS.get_user(user_id)
+
+        if user is None:
+            return Response(status=404)
+        else:
+            if request.method == 'GET':
+                return jsonify([todo.serialize() for todo in user.todos])
+            elif request.method == 'POST':
+                if request.is_json:
+                    content = request.get_json()
+
+                    try:
+                        new_todo = deserialize_todo(content)
+
+                        try:
+                            USERS.add_todo_to_user(user.id, new_todo)
+
+                            res = Response(status=202)
+                            location = f'/users/{user.id}/todos/{new_todo.id}'
+                            res.headers['Location'] = location
+                            return res
+                        except AttributeError as e:
+                            return Response(status=409, response=str(e))
+
+                    except (AttributeError, TypeError) as e:
+                        return Response(status=400, response=str(e))
+                else:
+                    return Response(status=405, response='no JSON supplied')
+    except AttributeError as e:
+        return Response(status=409, response=str(e))
+
+
+@app.route('/users/<int:user_id>/todos/<int:todo_id>', methods=('GET', 'DELETE'))
+def todo_by_user_and_todo_id(user_id: int, todo_id: int) -> Response:
+    try:
+        user = USERS.get_user(user_id)
+
+        if user is None:
+            return Response(status=404)
+        else:
+            todos_by_id = list(
+                filter(lambda t: t.id == todo_id, user.todos))
+
+            if len(todos_by_id) == 0:
+                return Response(status=404)
+            elif len(todos_by_id) > 1:
+                return Response(status=409, response=f'Multiple user todos with the ID {todo_id}')
+            else:
+                if request.method == 'GET':
+                    return jsonify(todos_by_id[0].serialize())
+                elif request.method == 'DELETE':
+                    for idx, todo in enumerate(user.todos):
+                        if todo.id == todo_id:
+                            del user.todos[idx]
+                    return Response(status=200)
 
     except AttributeError as e:
         return Response(status=409, response=str(e))

@@ -7,7 +7,12 @@ app = Flask(__name__)
 
 
 class Jsonable(object):
-    def to_dict(self) -> dict:
+    def serialize(self) -> dict:
+        pass
+
+
+class JsonableList(object):
+    def serialize(self) -> List[dict]:
         pass
 
 
@@ -17,7 +22,7 @@ class Todo(Jsonable):
         self.task = task
         self.done = done
 
-    def to_dict(self) -> dict:
+    def serialize(self) -> dict:
         return {'id': self.id, 'task': self.task, 'done': self.done}
 
 
@@ -54,12 +59,8 @@ class User(Jsonable):
         self.name = name
         self.todos = todos
 
-    def __del__(self) -> None:
-        if self.todos != []:
-            self.todos = []
-
-    def to_dict(self) -> dict:
-        return {'id': self.id, 'name': self.name, 'todos': [todo.to_dict() for todo in self.todos]}
+    def serialize(self) -> dict:
+        return {'id': self.id, 'name': self.name, 'todos': [todo.serialize() for todo in self.todos]}
 
 
 def deserialize_user(u: dict) -> Todo:
@@ -89,39 +90,49 @@ def deserialize_user(u: dict) -> Todo:
     return User(id=id, name=name, todos=todos)
 
 
-USERS: List[User] = []
+class Users(JsonableList):
+    def __init__(self, users: List[User] = []) -> None:
+        self.users = users
+
+    def add_user(self, user: User) -> None:
+        for u in self.users:
+            if u.id == user.id:
+                raise AttributeError(f'a user with ID {u.id} already exists')
+
+        self.users.append(user)
+
+    def get_user(self, user_id: int) -> User:
+        users_by_id = list(filter(lambda u: u.id == user_id, self.users))
+
+        if len(users_by_id) == 0:
+            return None
+        elif len(users_by_id) > 1:
+            raise AttributeError(f'multiple users with the ID {user_id}')
+        else:
+            return users_by_id[0]
+
+    def delete_user(self, user_id: int) -> None:
+        user = self.get_user(user_id)
+
+        if user is not None:
+            self.users.remove(user)
+
+    def add_todo_to_user(self, user_id: int, todo: Todo) -> None:
+        for idx, u in enumerate(self.users):
+            if u.id == user_id:
+                self.users[idx].todos.append(todo)
+
+    def serialize(self) -> List[dict]:
+        return [user.serialize() for user in self.users]
 
 
-def response_with_location_header(user_id: int) -> Response:
-    res = Response(status=202)
-    location = f'/users/{user_id}'
-    res.headers['Location'] = location
-    return res
-
-
-def create_user(user: User) -> None:
-    for u in USERS:
-        if u.id == user.id:
-            raise AttributeError(f'a user with ID {u.id} already exists')
-
-    USERS.append(user)
-
-
-def get_user(user_id: int) -> User:
-    users = list(filter(lambda u: u.id == user_id, USERS))
-
-    if len(users) == 0:
-        return None
-    elif len(users) > 1:
-        raise AttributeError(f'multiple users with the ID {user_id}')
-    else:
-        return users[0]
+USERS: Users = Users()
 
 
 @app.route('/users', methods=('GET', 'POST'))
 def users_endpoint() -> Response:
     if request.method == 'GET':
-        return jsonify([user.to_dict() for user in USERS])
+        return jsonify(USERS.serialize())
     elif request.method == 'POST':
         if request.is_json:
             content = request.get_json()
@@ -130,8 +141,12 @@ def users_endpoint() -> Response:
                 new_user = deserialize_user(content)
 
                 try:
-                    create_user(new_user)
-                    return response_with_location_header(new_user.id)
+                    USERS.add_user(new_user)
+                    res = Response(status=202)
+                    location = f'/users/{new_user.id}'
+                    res.headers['Location'] = location
+                    return res
+
                 except AttributeError as e:
                     return Response(status=409, response=str(e))
 
@@ -144,16 +159,79 @@ def users_endpoint() -> Response:
 @app.route('/users/<int:user_id>', methods=('GET', 'DELETE'))
 def user_by_id(user_id: int) -> Response:
     try:
-        user = get_user(user_id)
+        user = USERS.get_user(user_id)
 
         if user is None:
             return Response(status=404)
         else:
             if request.method == 'GET':
-                return jsonify(user.to_dict())
+                return jsonify(user.serialize())
             elif request.method == 'DELETE':
-                USERS.remove(user)
+                USERS.delete_user(user.id)
                 return Response(status=200)
+
+    except AttributeError as e:
+        return Response(status=409, response=str(e))
+
+
+@app.route('/users/<int:user_id>/todos', methods=('GET', 'POST'))
+def user_todos_by_id(user_id: int) -> Response:
+    try:
+        user = USERS.get_user(user_id)
+
+        if user is None:
+            return Response(status=404)
+        else:
+            if request.method == 'GET':
+                return jsonify([todo.serialize() for todo in user.todos])
+            elif request.method == 'POST':
+                if request.is_json:
+                    content = request.get_json()
+
+                    try:
+                        new_todo = deserialize_todo(content)
+
+                        try:
+                            USERS.add_todo_to_user(user.id, new_todo)
+
+                            res = Response(status=202)
+                            location = f'/users/{user.id}/todos/{new_todo.id}'
+                            res.headers['Location'] = location
+                            return res
+                        except AttributeError as e:
+                            return Response(status=409, response=str(e))
+
+                    except (AttributeError, TypeError) as e:
+                        return Response(status=400, response=str(e))
+                else:
+                    return Response(status=405, response='no JSON supplied')
+    except AttributeError as e:
+        return Response(status=409, response=str(e))
+
+
+@app.route('/users/<int:user_id>/todos/<int:todo_id>', methods=('GET', 'DELETE'))
+def todo_by_user_and_todo_id(user_id: int, todo_id: int) -> Response:
+    try:
+        user = USERS.get_user(user_id)
+
+        if user is None:
+            return Response(status=404)
+        else:
+            todos_by_id = list(
+                filter(lambda t: t.id == todo_id, user.todos))
+
+            if len(todos_by_id) == 0:
+                return Response(status=404)
+            elif len(todos_by_id) > 1:
+                return Response(status=409, response=f'Multiple user todos with the ID {todo_id}')
+            else:
+                if request.method == 'GET':
+                    return jsonify(todos_by_id[0].serialize())
+                elif request.method == 'DELETE':
+                    for idx, todo in enumerate(user.todos):
+                        if todo.id == todo_id:
+                            del user.todos[idx]
+                    return Response(status=200)
 
     except AttributeError as e:
         return Response(status=409, response=str(e))
