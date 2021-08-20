@@ -1,0 +1,1 @@
+static PyObject *current(PyObject *self, PyObject *args);

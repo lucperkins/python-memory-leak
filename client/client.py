@@ -17,6 +17,7 @@ logger.addHandler(logHandler)
 
 def main():
     http_endpoint = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
+    whattime_endpoint = f'{http_endpoint}/whattimeisitrightnow'
 
     logger.info('connecting to API', extra={'address': http_endpoint})
 
@@ -25,11 +26,11 @@ def main():
     s.mount('http://', HTTPAdapter(max_retries=retries))
 
     while True:
-        res = s.get(http_endpoint)
-        logger.info('response received from %s', http_endpoint,
+        res = s.get(whattime_endpoint)
+        logger.info('response received from %s', whattime_endpoint,
                     extra={'status': res.status_code})
 
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 if __name__ == '__main__':

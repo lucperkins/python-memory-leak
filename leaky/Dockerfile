@@ -16,7 +16,7 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Build C extension
-RUN (cd hello && python setup.py build && python setup.py install)
+RUN (cd whattime && python setup.py build && python setup.py install)
 
 EXPOSE 8080
 

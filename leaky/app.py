@@ -1,14 +1,15 @@
-from flask import Flask, Response
+from flask import Flask, jsonify
 
-from hello import hello
+from whattime import current
 
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/whattimeisitrightnow')
 def index():
-    quote = hello()
-    return Response(status=200, response=quote)
+    current_time = {'rightnow': current()}
+
+    return jsonify(current_time)
 
 
 def main():
