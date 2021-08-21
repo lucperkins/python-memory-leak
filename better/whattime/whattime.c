@@ -5,18 +5,12 @@
 
 #define BUFFERSIZE 100
 
-time_t current_time() {
-	time_t now;
-	time(&now);
-	return now;
-}
-
 static PyObject *current_timestamp_formatted() {
 	time_t now;
-	struct tm *time_info = malloc(sizeof(time_t));
+	struct tm *time_info;
 	char formatted_time_string_buffer[BUFFERSIZE];
 
-	now = current_time();
+	time(&now);
 
 	time_info = localtime(&now);
 
@@ -31,9 +25,7 @@ static PyObject *current_timestamp_raw() {
 
 	now = time(NULL);
 
-	value = Py_BuildValue("i", now);
-
-  return value;
+  return Py_BuildValue("i", now);
 }
 
 static char whattime_mod_documentation[] = "This module performs tasks related to the current time";

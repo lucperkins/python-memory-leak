@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import time
 
 from pythonjsonlogger import jsonlogger
@@ -15,6 +16,10 @@ logHandler.setFormatter(jsonlogger.JsonFormatter())
 logger.addHandler(logHandler)
 
 
+def coin_flip() -> bool:
+    return bool(random.getrandbits(1))
+
+
 def main():
     http_endpoint = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
     whattime_endpoint = f'{http_endpoint}/whattimeisitrightnow'
@@ -23,14 +28,16 @@ def main():
 
     s = requests.Session()
     retries = Retry(total=20, backoff_factor=0.5)
+
     s.mount('http://', HTTPAdapter(max_retries=retries))
 
     while True:
-        res = s.get(whattime_endpoint)
-        logger.info('response received from %s', whattime_endpoint,
-                    extra={'status': res.status_code})
+        time_format = random.choice(['raw', 'formatted'])
+        params = {'format': time_format}
 
-        time.sleep(0.5)
+        res = s.get(whattime_endpoint, params=params)
+        logger.info('response received', extra={
+                    'status': res.status_code, 'endpoint': whattime_endpoint})
 
 
 if __name__ == '__main__':
