@@ -37,7 +37,7 @@ services:
       com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache-python-service"}]'
   well_behaved_cache:
     build:
-      context: leaky_cache
+      context: well_behaved_cache
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081

@@ -49,7 +49,6 @@ def main():
 
         key = f'key-{n}'
         value = random_text()
-        print(value)
         key_endpoint = f'{cache_endpoint}/{key}'
 
         # PUT to the cache
