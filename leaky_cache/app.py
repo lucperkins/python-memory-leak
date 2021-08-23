@@ -20,7 +20,7 @@ class Cache(object):
 CACHE = Cache()
 
 
-@app.route('/cache/<string:key>', methods=('GET', 'POST'))
+@app.route('/cache/<string:key>', methods=('GET', 'PUT'))
 def caching_endpoint(key: str):
     if request.method == 'GET':
         value = CACHE.get(key)
@@ -29,7 +29,7 @@ def caching_endpoint(key: str):
             return Response(status=404)
         else:
             return jsonify({'value': value})
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
         content = request.json
 
         if content is None:
