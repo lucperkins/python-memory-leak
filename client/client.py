@@ -1,6 +1,6 @@
 import logging
 import os
-from random import choices, randrange
+from random import choices
 from string import printable
 from typing import Any
 
@@ -23,9 +23,8 @@ def log_result(endpoint: str, method: str, status: int) -> None:
         'endpoint': endpoint, 'method': method, 'status': status})
 
 
-def random_text() -> str:
-    value_length = randrange(750, 1000)
-    return ''.join(choices(printable, k=value_length))
+def random_text(k: int) -> str:
+    return ''.join(choices(printable, k=k))
 
 
 class Client(object):
@@ -57,10 +56,11 @@ class Client(object):
 def main():
     client = Client()
     n = 1
+    payload_size = int(os.environ['PAYLOAD_SIZE'])
 
     while True:
         # PUT to the cache
-        client.put("key-{n}", random_text())
+        client.put("key-{n}", random_text(payload_size))
         n += 1
 
 

@@ -59,6 +59,7 @@ services:
     environment:
       - API_HOST=leaky_cache
       - API_PORT=8080
+      - PAYLOAD_SIZE=1000
     depends_on:
       - leaky_cache
   well_behaved_cache_service_client:
@@ -67,5 +68,6 @@ services:
     environment:
       - API_HOST=well_behaved_cache
       - API_PORT=8081
+      - PAYLOAD_SIZE=1000
     depends_on:
       - well_behaved_cache
