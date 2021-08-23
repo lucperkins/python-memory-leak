@@ -65,7 +65,7 @@ services:
     build:
       context: client
     environment:
-      - API_HOST=well_behaved
+      - API_HOST=well_behaved_cache
       - API_PORT=8081
     depends_on:
       - well_behaved_cache

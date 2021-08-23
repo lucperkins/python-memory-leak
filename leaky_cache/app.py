@@ -4,22 +4,26 @@ from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
-CACHE: dict = {}
+
+class Cache(object):
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, key: str) -> Any:
+        return self.cache.get(key)
+
+    def set(self, key: str, value: Any) -> None:
+        if not (key, value) in self.cache.items():
+            self.cache.update({key: value})
 
 
-def cache_get(key: str) -> Any:
-    return CACHE.get(key)
-
-
-def cache_set(key: str, value: Any) -> None:
-    if (key, value) not in CACHE.items():
-        CACHE.update({key: value})
+CACHE = Cache()
 
 
 @app.route('/cache/<string:key>', methods=('GET', 'POST'))
 def caching_endpoint(key: str):
     if request.method == 'GET':
-        value = cache_get(key)
+        value = CACHE.get(key)
 
         if value is None:
             return Response(status=404)
@@ -36,7 +40,7 @@ def caching_endpoint(key: str):
             if value is None:
                 return Response(status=400, response='must supply a value field')
             else:
-                cache_set(key, value)
+                CACHE.set(key, value)
                 return Response(status=204)
 
 
