@@ -18,7 +18,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Build C extension
 RUN (cd whattime && python setup.py build && python setup.py install)
 
-EXPOSE 8080
-
 ENTRYPOINT ["ddtrace-run"]
-CMD ["flask", "run", "--port=8080", "--host=0.0.0.0"]
+CMD ["python", "start.py"]

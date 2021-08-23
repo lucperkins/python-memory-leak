@@ -22,6 +22,7 @@ services:
       context: leaky
     environment:
       - FLASK_DEBUG=1
+      - FLASK_RUN_PORT=8080
       - DD_SERVICE=leaky-python-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
@@ -39,6 +40,7 @@ services:
       context: better
     environment:
       - FLASK_DEBUG=1
+      - FLASK_RUN_PORT=8081
       - DD_SERVICE=better-python-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
