@@ -56,21 +56,11 @@ class Client(object):
 
 def main():
     client = Client()
-
     n = 1
 
     while True:
         # PUT to the cache
-        key = f'key-{n}'
-        value = random_text()
-        client.put(key, value)
-
-        # GET previously written keys from the cache 10 times (some will be missing)
-        for _ in range(0, 10):
-            r = randrange(0, n)
-            key = f'key-{r}'
-            client.get(key)
-
+        client.put("key-{n}", "value-{n}")
         n += 1
 
 
