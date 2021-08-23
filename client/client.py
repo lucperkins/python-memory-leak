@@ -60,8 +60,6 @@ def main():
     n = 1
 
     while True:
-        res: Response
-
         # PUT to the cache
         key = f'key-{n}'
         value = random_text()
