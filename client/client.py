@@ -1,10 +1,10 @@
 import logging
 import os
 import random
-import time
 
 from pythonjsonlogger import jsonlogger
 import requests
+from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -22,22 +22,34 @@ def coin_flip() -> bool:
 
 def main():
     http_endpoint = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
-    whattime_endpoint = f'{http_endpoint}/whattimeisitrightnow'
+    cache_endpoint = f'{http_endpoint}/cache'
 
-    logger.info('connecting to API', extra={'address': http_endpoint})
+    logger.info('connecting to cache API', extra={'address': http_endpoint})
 
     s = requests.Session()
     retries = Retry(total=20, backoff_factor=0.5)
 
     s.mount('http://', HTTPAdapter(max_retries=retries))
 
-    while True:
-        time_format = random.choice(['raw', 'formatted'])
-        params = {'format': time_format}
+    n = 0
 
-        res = s.get(whattime_endpoint, params=params)
+    while True:
+        res: Response
+
+        key = f'key-{n}'
+        value = f'some-value-{n}'
+        key_endpoint = f'{cache_endpoint}/{key}'
+
+        # Alternate between POSTs and GETS
+        if coin_flip():
+            res = s.post(key_endpoint, json={'value': value})
+        else:
+            res = s.get(key_endpoint)
+
         logger.info('response received', extra={
-                    'status': res.status_code, 'endpoint': whattime_endpoint})
+                    'endpoint': key_endpoint, 'method': 'GET', 'status': res.status_code})
+
+        n += 1
 
 
 if __name__ == '__main__':

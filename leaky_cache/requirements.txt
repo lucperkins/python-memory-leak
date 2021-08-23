@@ -1,0 +1,3 @@
+ddtrace==0.51.2
+Flask==2.0.1
+python-json-logger==2.0.2

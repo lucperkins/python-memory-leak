@@ -15,8 +15,5 @@ COPY . .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Build C extension
-RUN (cd whattime && python setup.py build && python setup.py install)
-
 ENTRYPOINT ["ddtrace-run"]
 CMD ["python", "start.py"]
