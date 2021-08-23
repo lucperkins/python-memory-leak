@@ -1,6 +1,6 @@
 import logging
 import os
-import random
+from random import getrandbits, randrange
 
 from pythonjsonlogger import jsonlogger
 import requests
@@ -17,7 +17,12 @@ logger.addHandler(logHandler)
 
 
 def coin_flip() -> bool:
-    return bool(random.getrandbits(1))
+    return bool(getrandbits(1))
+
+
+def log_result(endpoint: str, method: str, status: int) -> None:
+    logger.info('response received', extra={
+        'endpoint': endpoint, 'method': method, 'status': status})
 
 
 def main():
@@ -40,14 +45,16 @@ def main():
         value = f'some-value-{n}'
         key_endpoint = f'{cache_endpoint}/{key}'
 
-        # Alternate between POSTs and GETS
-        if coin_flip():
-            res = s.post(key_endpoint, json={'value': value})
-        else:
-            res = s.get(key_endpoint)
+        # PUT to the cache
+        res = s.post(key_endpoint, json={'value': value})
+        log_result(key_endpoint, 'POST', res.status_code)
 
-        logger.info('response received', extra={
-                    'endpoint': key_endpoint, 'method': 'GET', 'status': res.status_code})
+        # GET previously written keys from the cache 10 times (some will be missing)
+        for _ in range(0, 10):
+            r = randrange(0, n)
+            random_key_endpoint = f'{cache_endpoint}/key-{r}'
+            res = s.get(random_key_endpoint)
+            log_result(random_key_endpoint, 'GET', res.status_code)
 
         n += 1
 
