@@ -1,6 +1,7 @@
 import logging
 import os
-from random import getrandbits, randrange
+from random import choices, getrandbits, randrange
+from string import ascii_lowercase, ascii_uppercase, digits
 
 from pythonjsonlogger import jsonlogger
 import requests
@@ -25,6 +26,11 @@ def log_result(endpoint: str, method: str, status: int) -> None:
         'endpoint': endpoint, 'method': method, 'status': status})
 
 
+def random_text() -> str:
+    value_length = randrange(25, 100)
+    return ''.join(choices(ascii_lowercase + ascii_uppercase + digits, k=value_length))
+
+
 def main():
     http_endpoint = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
     cache_endpoint = f'{http_endpoint}/cache'
@@ -36,13 +42,14 @@ def main():
 
     s.mount('http://', HTTPAdapter(max_retries=retries))
 
-    n = 0
+    n = 1
 
     while True:
         res: Response
 
         key = f'key-{n}'
-        value = f'some-value-{n}'
+        value = random_text()
+        print(value)
         key_endpoint = f'{cache_endpoint}/{key}'
 
         # PUT to the cache
