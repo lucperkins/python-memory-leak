@@ -17,13 +17,13 @@ services:
       - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
     labels:
       com.datadoghq.ad.logs: '[{"source": "agent", "service": "agent"}]'
-  leaky:
+  leaky_cache:
     build:
       context: leaky
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8080
-      - DD_SERVICE=leaky-python-service
+      - DD_SERVICE=leaky-cache-python-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
@@ -34,14 +34,14 @@ services:
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-python-service"}]'
-  better:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache-python-service"}]'
+  leaky_c_extension:
     build:
-      context: better
+      context: c_extension
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081
-      - DD_SERVICE=better-python-service
+      - DD_SERVICE=leaky-c-extension-python-service
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
@@ -52,20 +52,44 @@ services:
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "better-python-service"}]'
-  leaky_service_client:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-c-extension-python-service"}]'
+  well_behaved:
+    build:
+      context: well_behaved
+    environment:
+      - FLASK_DEBUG=1
+      - FLASK_RUN_PORT=8082
+      - DD_SERVICE=well-behaved-python-service
+      - DD_AGENT_HOST=agent
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ANALYTICS_ENABLED=true
+      - DD_PROFILING_ENABLED=true
+      - DD_VERSION=1.0
+    ports:
+      - "8082:8082"
+    depends_on:
+      - agent
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "well-behaved-python-service"}]'
+  leaky_cache_service_client:
     build:
       context: client
     environment:
-      - API_HOST=leaky
+      - API_HOST=leaky_cache
       - API_PORT=8080
     depends_on:
       - leaky
-  better_service_client:
+  c_extension_service_client:
     build:
       context: client
     environment:
-      - API_HOST=better
+      - API_HOST=leaky_c_extension
       - API_PORT=8081
+  well_behaved_service_client:
+    build:
+      context: client
+    environment:
+      - API_HOST=well_behaved
+      - API_PORT=8082
     depends_on:
-      - better
+      - well_behaved
