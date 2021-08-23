@@ -1,6 +1,6 @@
 import logging
 import os
-from random import choices, getrandbits, randrange
+from random import choices, randrange
 from string import ascii_lowercase, ascii_uppercase, digits
 from typing import Any
 
@@ -16,10 +16,6 @@ logHandler = logging.StreamHandler()
 formatter = jsonlogger.JsonFormatter()
 logHandler.setFormatter(jsonlogger.JsonFormatter())
 logger.addHandler(logHandler)
-
-
-def coin_flip() -> bool:
-    return bool(getrandbits(1))
 
 
 def log_result(endpoint: str, method: str, status: int) -> None:
