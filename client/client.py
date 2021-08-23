@@ -1,7 +1,7 @@
 import logging
 import os
 from random import choices, randrange
-from string import ascii_lowercase, ascii_uppercase, digits
+from string import printable
 from typing import Any
 
 from pythonjsonlogger import jsonlogger
@@ -24,8 +24,8 @@ def log_result(endpoint: str, method: str, status: int) -> None:
 
 
 def random_text() -> str:
-    value_length = randrange(25, 100)
-    return ''.join(choices(ascii_lowercase + ascii_uppercase + digits, k=value_length))
+    value_length = randrange(750, 1000)
+    return ''.join(choices(printable, k=value_length))
 
 
 class Client(object):
@@ -60,7 +60,7 @@ def main():
 
     while True:
         # PUT to the cache
-        client.put("key-{n}", "value-{n}")
+        client.put("key-{n}", random_text())
         n += 1
 
 

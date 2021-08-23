@@ -15,7 +15,7 @@ class Cache(object):
 
     def set(self, key: str, value: Any) -> None:
         if not (key, value) in self.cache.items():
-            self.cache.update({key: value})
+            self.cache[key] = value
 
 
 CACHE = Cache()

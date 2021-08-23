@@ -20,6 +20,10 @@ services:
   leaky_cache:
     build:
       context: leaky_cache
+    deploy:
+      resources:
+        limits:
+          memory: 100M
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8080
@@ -38,6 +42,10 @@ services:
   well_behaved_cache:
     build:
       context: well_behaved_cache
+    deploy:
+      resources:
+        limits:
+          memory: 100M
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081
