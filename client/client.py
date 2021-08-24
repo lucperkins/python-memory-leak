@@ -1,14 +1,12 @@
+import asyncio
 import logging
 import os
 from random import choices
 from string import printable
 from typing import Any
 
+from httpx import AsyncClient, AsyncHTTPTransport
 from pythonjsonlogger import jsonlogger
-import requests
-from requests import Response
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -17,52 +15,36 @@ formatter = jsonlogger.JsonFormatter()
 logHandler.setFormatter(jsonlogger.JsonFormatter())
 logger.addHandler(logHandler)
 
+HTTP_ENDPOINT = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
+PAYLOAD_SIZE = int(os.environ['PAYLOAD_SIZE'])
 
-def log_result(endpoint: str, method: str, status: int) -> None:
+
+def log_result(key: str, method: str, status: int) -> None:
     logger.info('response received', extra={
-        'endpoint': endpoint, 'method': method, 'status': status})
+        'key': key, 'method': method, 'status': status})
 
 
-def random_text(k: int) -> str:
-    return ''.join(choices(printable, k=k))
+def random_text() -> str:
+    return ''.join(choices(printable, k=PAYLOAD_SIZE))
 
 
-class Client(object):
-    def __init__(self) -> None:
-        http_endpoint = f"http://{os.environ['API_HOST']}:{os.environ['API_PORT']}"
-        logger.info('connecting to cache API',
-                    extra={'address': http_endpoint})
+async def main():
+    logger.info('connecting to cache API',
+                extra={'address': HTTP_ENDPOINT, 'payload_size': PAYLOAD_SIZE})
+    cache_endpoint = f'{HTTP_ENDPOINT}/cache'
 
-        cache_endpoint = f'{http_endpoint}/cache'
+    transport = AsyncHTTPTransport(retries=20)
 
-        self.endpoint = cache_endpoint
+    async with AsyncClient(transport=transport) as client:
+        n = 1
 
-        s = requests.Session()
-        retries = Retry(total=20, backoff_factor=0.5)
-        s.mount('http://', HTTPAdapter(max_retries=retries))
-        self.session = s
-
-    def get(self, key: str) -> None:
-        key_endpoint = f'{self.endpoint}/{key}'
-        res = self.session.get(key_endpoint)
-        log_result(key_endpoint, 'GET', res.status_code)
-
-    def put(self, key: str, value: Any) -> None:
-        key_endpoint = f'{self.endpoint}/{key}'
-        res = self.session.put(key_endpoint, json={'value': value})
-        log_result(key_endpoint, 'PUT', res.status_code)
-
-
-def main():
-    client = Client()
-    n = 1
-    payload_size = int(os.environ['PAYLOAD_SIZE'])
-
-    while True:
-        # PUT to the cache
-        client.put("key-{n}", random_text(payload_size))
-        n += 1
+        while True:
+            key = f"key-{n}"
+            endpoint = f"{cache_endpoint}/{key}"
+            res = await client.put(endpoint, json={'value': random_text()})
+            log_result(key, 'PUT', res.status_code)
+            n += 1
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
