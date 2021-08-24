@@ -1,1 +1,3 @@
-build/
+# Virtualenv
+__pycache__/
+venv/

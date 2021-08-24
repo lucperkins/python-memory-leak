@@ -14,8 +14,7 @@ class Cache(object):
         return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
-        if not (key, value) in self.cache.items():
-            self.cache[key] = value
+        self.cache[key] = value
 
     def info(self) -> dict:
         return {
