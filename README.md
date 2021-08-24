@@ -49,6 +49,24 @@ The HTTP clients interacting with the different versions of the caching service 
 are 10,000 characters long by default. You can change that on a per-client basis by updating the
 `PAYLOAD_SIZE` environment variable in the [Docker Compose config][yaml].
 
+## Monitoring
+
+This scenario is built to be monitored by Datadog's APM service. But you can do some simple
+monitoring of your own locally using the `/info` endpoint, which exposes two pieces of information:
+
+1. The current number of items stored in the cache
+2. The total current size (in bytes) of the cache
+
+A shell loop like this would enable you to monitor the service:
+
+```shell
+while true; do curl http://localhost:8080/info; sleep 60; done
+```
+
+Note the delay of 60 seconds between calls to the `/info` endpoint. Over time, the "leaky" cache
+should contain more and more items, whereas the "well-behaved" cache should have roughly the same
+number of items from minute to minute (due to expiry).
+
 [agent]: https://docs.datadog.com/agent
 [client]: ./client
 [docker]: https://docker.com
