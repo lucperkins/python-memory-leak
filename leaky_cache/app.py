@@ -1,3 +1,4 @@
+import sys
 from typing import Any
 
 from flask import Flask, jsonify, request, Response
@@ -15,6 +16,12 @@ class Cache(object):
     def set(self, key: str, value: Any) -> None:
         if not (key, value) in self.cache.items():
             self.cache[key] = value
+
+    def info(self) -> dict:
+        return {
+            'num_cache_items': len(self.cache),
+            'total_cache_size': sys.getsizeof(self.cache)
+        }
 
 
 CACHE = Cache()
@@ -42,6 +49,11 @@ def caching_endpoint(key: str):
             else:
                 CACHE.set(key, value)
                 return Response(status=204)
+
+
+@app.route('/info')
+def info_endpoint():
+    return jsonify(CACHE.info())
 
 
 if __name__ == '__main__':

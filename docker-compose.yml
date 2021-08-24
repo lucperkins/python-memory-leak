@@ -18,6 +18,7 @@ services:
     labels:
       com.datadoghq.ad.logs: '[{"source": "agent", "service": "agent"}]'
   leaky_cache:
+    container_name: leaky-cache
     build:
       context: leaky_cache
     environment:
@@ -36,6 +37,7 @@ services:
     labels:
       com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache"}]'
   well_behaved_cache:
+    container_name: well-behaved-cache
     build:
       context: well_behaved_cache
     environment:
@@ -57,21 +59,21 @@ services:
     build:
       context: client
     deploy:
-      replicas: 3
+      replicas: 10
     environment:
       - API_HOST=leaky_cache
       - API_PORT=8080
-      - PAYLOAD_SIZE=1000
+      - PAYLOAD_SIZE=10000
     depends_on:
       - leaky_cache
   well_behaved_cache_service_client:
     build:
       context: client
     deploy:
-      replicas: 3
+      replicas: 10
     environment:
       - API_HOST=well_behaved_cache
       - API_PORT=8081
-      - PAYLOAD_SIZE=1000
+      - PAYLOAD_SIZE=10000
     depends_on:
       - well_behaved_cache
