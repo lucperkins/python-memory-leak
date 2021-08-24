@@ -23,9 +23,20 @@ The caching service is utilized by an async HTTP [client] that continuously writ
 generated strings to the cache as fast it can get away with. The current configuration runs 10
 instances of the client for each version of the service.
 
+## Visual comparison
+
+The "leaky" service:
+
+![Leak service memory profile](./images/leaky-service.png)
+
+The "well-behaved" service:
+
+![Well-behaved service memory profile](./images/well-behaved-service.png)
+
 ## Prerequisites
 
-The only real prerequisites to run the service(s) locally are to have [Docker] and [Docker Compose] installed and the Docker daemon running on your machine.
+The only real prerequisites to run the service(s) locally are to have [Docker] and [Docker Compose] 
+installed and the Docker daemon running on your machine.
 
 ## Running the scenario
 
