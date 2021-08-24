@@ -23,7 +23,7 @@ services:
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8080
-      - DD_SERVICE=leaky-cache-python-service
+      - DD_SERVICE=leaky-cache
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
@@ -34,14 +34,14 @@ services:
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache-python-service"}]'
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache"}]'
   well_behaved_cache:
     build:
       context: well_behaved_cache
     environment:
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081
-      - DD_SERVICE=well-behaved-cache-python-service
+      - DD_SERVICE=well-behaved-cache
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
@@ -52,7 +52,7 @@ services:
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "well-behaved-cache-python-service"}]'
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "well-behaved-cache"}]'
   leaky_cache_service_client:
     build:
       context: client
