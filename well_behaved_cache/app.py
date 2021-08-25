@@ -1,3 +1,4 @@
+import os
 import sys
 from typing import Any
 
@@ -9,7 +10,9 @@ app = Flask(__name__)
 
 class Cache(object):
     def __init__(self):
-        self.cache = ExpiringDict(max_len=1000, max_age_seconds=60)
+        max_items = int(os.environ['CACHE_MAX_ITEMS'])
+        max_age = int(os.environ['CACHE_MAX_AGE_SECS'])
+        self.cache = ExpiringDict(max_len=max_items, max_age_seconds=max_age)
 
     def get(self, key: str) -> Any:
         return self.cache.get(key)

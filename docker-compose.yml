@@ -42,6 +42,8 @@ services:
     build:
       context: well_behaved_cache
     environment:
+      - CACHE_MAX_ITEMS=1000
+      - CACHE_MAX_AGE_SECS=60
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081
       - DD_SERVICE=well-behaved-cache
