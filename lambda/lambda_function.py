@@ -1,5 +1,8 @@
+import os
+
+
 def get_name(event: dict) -> str:
-    default_name = 'world'
+    default_name = os.environ['DEFAULT_NAME']
     name: str
 
     if 'name' in event:

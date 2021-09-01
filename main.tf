@@ -92,6 +92,12 @@ resource "aws_lambda_function" "memory_leak" {
   handler          = "lambda_function.lambda_handler"
   source_code_hash = data.archive_file.memory_leak.output_base64sha256
   role             = aws_iam_role.lambda_exec.arn
+
+  environment {
+    variables = {
+      DEFAULT_NAME = "world"
+    }
+  }
 }
 
 // Datadog resources
