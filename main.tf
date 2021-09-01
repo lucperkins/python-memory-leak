@@ -216,6 +216,7 @@ resource "aws_iam_role" "datadog_aws_integration" {
 }
 
 // Datadog resources
+/*
 resource "datadog_integration_aws" "python_memory_leak" {
   account_id = var.aws_account_id
   role_name  = var.datadog_aws_integration_role
@@ -225,3 +226,4 @@ resource "datadog_integration_aws_lambda_arn" "python_memory_leak_lambda" {
   account_id = var.aws_account_id
   lambda_arn = aws_lambda_function.memory_leak.arn
 }
+*/
