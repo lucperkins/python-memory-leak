@@ -215,6 +215,11 @@ resource "aws_iam_role" "datadog_aws_integration" {
   assume_role_policy = data.aws_iam_policy_document.datadog_aws_integration_assume_role.json
 }
 
+resource "aws_iam_role_policy_attachment" "datadog_aws_integration" {
+  role       = aws_iam_role.datadog_aws_integration.name
+  policy_arn = aws_iam_policy.datadog_aws_integration.arn
+}
+
 // Datadog resources
 /*
 resource "datadog_integration_aws" "python_memory_leak" {
