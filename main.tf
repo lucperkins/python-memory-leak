@@ -258,11 +258,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 // Datadog resources
-resource "datadog_integration_aws" "main_account" {
-  account_id = var.aws_account_id
-  role_name  = var.datadog_aws_integration_role
-}
-
 resource "datadog_integration_aws_lambda_arn" "python_memory_leak_lambda" {
   account_id = var.aws_account_id
   lambda_arn = aws_lambda_function.memory_leak.arn
