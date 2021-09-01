@@ -43,6 +43,11 @@ variable "lambda_dir" {
   default = "lambda"
 }
 
+variable "lambda_function_name" {
+  type    = string
+  default = "PythonMemoryLeak"
+}
+
 variable "lambda_python_runtime" {
   type    = string
   default = "python3.9"
@@ -91,7 +96,7 @@ resource "aws_s3_bucket_object" "memory_leak_lambda" {
 }
 
 resource "aws_lambda_function" "memory_leak" {
-  function_name    = "PythonMemoryLeak"
+  function_name    = var.lambda_function_name
   s3_bucket        = aws_s3_bucket.lambda_archives.id
   s3_key           = aws_s3_bucket_object.memory_leak_lambda.key
   runtime          = var.lambda_python_runtime
@@ -99,15 +104,16 @@ resource "aws_lambda_function" "memory_leak" {
   source_code_hash = data.archive_file.memory_leak.output_base64sha256
   role             = aws_iam_role.lambda_exec.arn
 
+  depends_on = [
+    aws_cloudwatch_log_group.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_logs,
+  ]
+
   environment {
     variables = {
       DEFAULT_NAME = "world"
     }
   }
-}
-
-resource "aws_lambda_function_event_invoke_config" "hello" {
-  function_name = aws_lambda_function.memory_leak.function_name
 }
 
 // AWS + Datadog data + resources
@@ -209,6 +215,11 @@ data "aws_iam_policy_document" "datadog_aws_integration" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "lambda_logs" {
+  name              = "/aws/lambda/${var.lambda_function_name}"
+  retention_in_days = 1
+}
+
 resource "aws_iam_policy" "datadog_aws_integration" {
   name   = var.datadog_aws_integration_policy
   policy = data.aws_iam_policy_document.datadog_aws_integration.json
@@ -222,6 +233,28 @@ resource "aws_iam_role" "datadog_aws_integration" {
 resource "aws_iam_role_policy_attachment" "datadog_aws_integration" {
   role       = aws_iam_role.datadog_aws_integration.name
   policy_arn = aws_iam_policy.datadog_aws_integration.arn
+}
+
+resource "aws_iam_policy" "lambda_logging" {
+  name = "lambda_logging"
+  path = "/"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = "arn:aws:logs:*:*:*"
+      Effect   = "Allow"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
 // Datadog resources

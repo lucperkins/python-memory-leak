@@ -10,3 +10,6 @@ dist/
 # Terraform artifacts
 .terraform*
 .tf*
+
+# Lambda artifacts
+*.zip
