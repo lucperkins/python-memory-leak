@@ -12,13 +12,13 @@ terraform {
   }
 }
 
+variable "datadog_aws_integration_external_id" {
+  type = string
+}
+
 variable "datadog_role" {
   type    = string
   default = "DatadogAWSIntegrationRole"
-}
-
-variable "datadog_app_key" {
-  type = string
 }
 
 provider "aws" {
