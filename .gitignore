@@ -6,3 +6,7 @@ venv/
 *.pyc
 build/
 dist/
+
+# Terraform artifacts
+.terraform*
+.tf*
