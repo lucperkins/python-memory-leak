@@ -43,6 +43,11 @@ variable "lambda_python_runtime" {
   default = "python3.9"
 }
 
+variable "lambda_python_handler" {
+  type    = string
+  default = "lambda_function.lambda_handler"
+}
+
 variable "zip_file" {
   type    = string
   default = "leaky-cache.zip"
@@ -68,8 +73,7 @@ resource "aws_iam_role" "lambda_exec" {
       Principal = {
         Service = "lambda.amazonaws.com"
       }
-      }
-    ]
+    }]
   })
 }
 
