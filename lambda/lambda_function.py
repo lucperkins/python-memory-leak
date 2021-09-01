@@ -12,6 +12,9 @@ class Cache(object):
     def put(self, key: str, value: Any) -> None:
         self.cache[key] = value
 
+    def delete(self, key: str) -> None:
+        del self.cache[key]
+
 
 CACHE = Cache()
 
@@ -62,6 +65,11 @@ def lambda_handler(event: dict, _context) -> dict:
                 return {
                     'statusCode': 204
                 }
+        elif operation == 'delete':
+            CACHE.delete(key)
+            return {
+                'statusCode': 204
+            }
         else:
             return {
                 'statusCode': 400,
