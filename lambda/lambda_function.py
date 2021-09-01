@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+# The core application logic
+
 
 class Cache(object):
     def __init__(self) -> None:
