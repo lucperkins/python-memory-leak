@@ -234,3 +234,8 @@ resource "datadog_integration_aws_lambda_arn" "python_memory_leak_lambda" {
   account_id = var.aws_account_id
   lambda_arn = aws_lambda_function.memory_leak.arn
 }
+
+resource "datadog_integration_aws_log_collection" "all_logs" {
+  account_id = var.aws_account_id
+  services   = ["cloudfront", "elb", "elbv2", "lambda", "redshift", "s3"]
+}
