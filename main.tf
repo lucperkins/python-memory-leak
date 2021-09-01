@@ -24,7 +24,7 @@ variable "aws_account_id" {
   type = string
 }
 
-variable "datadog_aws_integration_policy" {
+/* variable "datadog_aws_integration_policy" {
   type    = string
   default = "DatadogAWSIntegrationPolicy"
 }
