@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from typing import Any
 
 from expiringdict import ExpiringDict
@@ -9,15 +10,22 @@ app = Flask(__name__)
 
 
 class Cache(object):
-    def __init__(self):
+    def __init__(self) -> None:
+        self.stagger = int(os.environ['STAGGER'])
+
         max_items = int(os.environ['CACHE_MAX_ITEMS'])
         max_age = int(os.environ['CACHE_MAX_AGE_SECS'])
         self.cache = ExpiringDict(max_len=max_items, max_age_seconds=max_age)
 
+    def stagger(self) -> None:
+        time.sleep(self.stagger)
+
     def get(self, key: str) -> Any:
+        self.stagger()
         return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
+        self.stagger()
         self.cache[key] = value
 
     def info(self) -> dict:

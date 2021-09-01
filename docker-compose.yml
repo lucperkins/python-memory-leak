@@ -22,6 +22,7 @@ services:
     build:
       context: leaky_cache
     environment:
+      - STAGGER=100
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8080
       - DD_SERVICE=leaky-cache
@@ -42,6 +43,7 @@ services:
     build:
       context: well_behaved_cache
     environment:
+      - STAGGER=100
       - CACHE_MAX_ITEMS=1000
       - CACHE_MAX_AGE_SECS=60
       - FLASK_DEBUG=1

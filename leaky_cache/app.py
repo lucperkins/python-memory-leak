@@ -1,4 +1,6 @@
+import os
 import sys
+import time
 from typing import Any
 
 from flask import Flask, jsonify, request, Response
@@ -7,13 +9,19 @@ app = Flask(__name__)
 
 
 class Cache(object):
-    def __init__(self):
+    def __init__(self) -> None:
+        self.stagger = int(os.environ['STAGGER'])
         self.cache = {}
 
+    def stagger(self):
+        time.sleep(self.stagger)
+
     def get(self, key: str) -> Any:
+        self.stagger()
         return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
+        self.stagger()
         self.cache[key] = value
 
     def info(self) -> dict:
