@@ -24,6 +24,11 @@ variable "aws_account_id" {
   type = string
 }
 
+variable "datadog_aws_integration_policy" {
+  type    = string
+  default = "DatadogAWSIntegrationPolicy"
+}
+
 variable "datadog_aws_integration_external_id" {
   type = string
 }
@@ -53,14 +58,15 @@ variable "zip_file" {
   default = "leaky-cache.zip"
 }
 
-// AWS resources
-resource "aws_s3_bucket" "lambda_archives" {}
-
+// Data
 data "archive_file" "memory_leak" {
   type        = "zip"
   source_dir  = "${path.module}/${var.lambda_dir}"
   output_path = "${path.module}/${var.zip_file}"
 }
+
+// AWS resources
+resource "aws_s3_bucket" "lambda_archives" {}
 
 resource "aws_iam_role" "lambda_exec" {
   name = "serverless_lambda"
@@ -98,6 +104,44 @@ resource "aws_lambda_function" "memory_leak" {
       DEFAULT_NAME = "world"
     }
   }
+}
+
+// AWS + Datadog data + resources
+data "aws_iam_policy_document" "datadog_aws_integration_assume_role" {
+  statement = {
+    actions = ["sts:AssumeRole"]
+
+    principals = {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::464622532012:root"]
+    }
+
+    condition = {
+      test     = "StringEquals"
+      variable = "sts:ExternalId"
+      values = [
+        var.datadog_aws_integration_external_id
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "datadog_aws_integration" {
+  statement {
+    actions = []
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "datadog_aws_integration" {
+  name   = var.datadog_aws_integration_policy
+  policy = data.aws_iam_policy_document.datadog_aws_integration.json
+}
+
+resource "aws_iam_role" "datadog_aws_integration" {
+  name               = var.datadog_aws_integration_role
+  assume_role_policy = data.aws_iam_policy_document.datadog_aws_integration_assume_role.json
 }
 
 // Datadog resources
