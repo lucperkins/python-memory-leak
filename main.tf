@@ -33,10 +33,6 @@ variable "datadog_aws_integration_policy" {
   default = "DatadogAWSIntegrationPolicy"
 }
 
-variable "datadog_aws_integration_external_id" {
-  type = string
-}
-
 variable "datadog_aws_integration_role" {
   type    = string
   default = "DatadogAWSIntegrationRole"
