@@ -23,19 +23,19 @@ def lambda_handler(event: dict, _context) -> dict:
     operation: str
 
     if not 'operation' in event and not 'key' in event:
-        print({
+        print(json.dumps({
             'errors': [
                 'no operation specified',
                 'no key specified'
             ]
-        })
+        }))
 
     if 'operation' in event:
         operation = event['operation']
     else:
         err = 'no operation specified'
 
-        print({'errors': [err]})
+        print(json.dumps({'errors': [err]}))
 
         return {
             'statusCode': 400,
@@ -45,7 +45,7 @@ def lambda_handler(event: dict, _context) -> dict:
     if not 'key' in event:
         err = 'no cache key specified'
 
-        print({'errors': [err]})
+        print(json.dumps({'errors': [err]}))
 
         return {
             'statusCode': 400,
@@ -60,14 +60,14 @@ def lambda_handler(event: dict, _context) -> dict:
             if value is None:
                 err = f'key {key} not present in cache'
 
-                print({'errors': [err]})
+                print(json.dumps({'errors': [err]}))
 
                 return {
                     'statusCode': 404,
                     'error': err
                 }
             else:
-                print({'success': {'op': 'get', 'key': key}})
+                print(json.dumps({'success': {'op': 'get', 'key': key}}))
 
                 return {
                     'statusCode': 200,
@@ -77,7 +77,7 @@ def lambda_handler(event: dict, _context) -> dict:
             if not 'value' in event:
                 err = 'no value specified'
 
-                print({'errors': [err]})
+                print(json.dumps({'errors': [err]}))
 
                 return {
                     'statusCode': 400,
@@ -87,7 +87,7 @@ def lambda_handler(event: dict, _context) -> dict:
                 value = event['value']
                 CACHE.put(key, value)
 
-                print({'success': {'op': 'put', 'key': key}})
+                print(json.dumps({'success': {'op': 'put', 'key': key}}))
 
                 return {
                     'statusCode': 204
@@ -95,7 +95,7 @@ def lambda_handler(event: dict, _context) -> dict:
         elif operation == 'delete':
             CACHE.delete(key)
 
-            print({'success': {'op': 'delete', 'key': key}})
+            print(json.dumps({'success': {'op': 'delete', 'key': key}}))
 
             return {
                 'statusCode': 204
@@ -103,7 +103,7 @@ def lambda_handler(event: dict, _context) -> dict:
         else:
             err = f'operation {operation} not recognized'
 
-            print({'errors': [err]})
+            print(json.dumps({'errors': [err]}))
 
             return {
                 'statusCode': 400,
