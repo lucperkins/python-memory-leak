@@ -108,7 +108,7 @@ resource "aws_lambda_function" "memory_leak" {
 
 // AWS + Datadog data + resources
 data "aws_iam_policy_document" "datadog_aws_integration_assume_role" {
-  statement = {
+  statement {
     actions = ["sts:AssumeRole"]
 
     principals = {
