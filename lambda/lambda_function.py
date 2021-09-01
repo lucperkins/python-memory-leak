@@ -22,20 +22,34 @@ CACHE = Cache()
 def lambda_handler(event: dict, _context) -> dict:
     operation: str
 
+    if not 'operation' in event and not 'key' in event:
+        print({
+            'errors': [
+                'no operation specified',
+                'no key specified'
+            ]
+        })
+
     if 'operation' in event:
         operation = event['operation']
     else:
+        err = 'no operation specified'
+
+        print({'errors': [err]})
+
         return {
             'statusCode': 400,
-            'body': {
-                'error': 'No operation specified'
-            }
+            'error': err
         }
 
     if not 'key' in event:
+        err = 'no cache key specified'
+
+        print({'errors': [err]})
+
         return {
             'statusCode': 400,
-            'error': 'no cache key specified'
+            'error': err
         }
     else:
         key = event['key']
@@ -44,34 +58,54 @@ def lambda_handler(event: dict, _context) -> dict:
             value = CACHE.get(key)
 
             if value is None:
+                err = f'key {key} not present in cache'
+
+                print({'errors': [err]})
+
                 return {
                     'statusCode': 404,
-                    'error': f'key {key} not present in cache'
+                    'error': err
                 }
             else:
+                print({'success': {'op': 'get', 'key': key}})
+
                 return {
                     'statusCode': 200,
                     'body': value
                 }
         elif operation == 'put':
             if not 'value' in event:
+                err = 'no value specified'
+
+                print({'errors': [err]})
+
                 return {
                     'statusCode': 400,
-                    'error': f'no value specified'
+                    'error': err
                 }
             else:
                 value = event['value']
                 CACHE.put(key, value)
+
+                print({'success': {'op': 'put', 'key': key}})
+
                 return {
                     'statusCode': 204
                 }
         elif operation == 'delete':
             CACHE.delete(key)
+
+            print({'success': {'op': 'delete', 'key': key}})
+
             return {
                 'statusCode': 204
             }
         else:
+            err = f'operation {operation} not recognized'
+
+            print({'errors': [err]})
+
             return {
                 'statusCode': 400,
-                'error': f'operation {operation} not recognized'
+                'error': err
             }
