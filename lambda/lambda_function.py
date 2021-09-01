@@ -6,7 +6,7 @@ def get_name(event: dict) -> str:
     name: str
 
     if 'name' in event:
-        return name
+        return event['name']
     else:
         return default_name
 
