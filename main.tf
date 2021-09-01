@@ -106,6 +106,10 @@ resource "aws_lambda_function" "memory_leak" {
   }
 }
 
+resource "aws_lambda_function_event_invoke_config" "hello" {
+  function_name = aws_lambda_function.memory_leak.function_name
+}
+
 // AWS + Datadog data + resources
 data "aws_iam_policy_document" "datadog_aws_integration_assume_role" {
   statement {
@@ -226,9 +230,7 @@ resource "datadog_integration_aws" "main_account" {
   role_name  = var.datadog_aws_integration_role
 }
 
-/*
 resource "datadog_integration_aws_lambda_arn" "python_memory_leak_lambda" {
   account_id = var.aws_account_id
   lambda_arn = aws_lambda_function.memory_leak.arn
 }
-*/
