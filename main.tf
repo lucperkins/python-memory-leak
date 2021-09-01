@@ -20,7 +20,7 @@ variable "datadog_aws_integration_external_id" {
   type = string
 }
 
-variable "datadog_role" {
+variable "datadog_aws_integration_role" {
   type    = string
   default = "DatadogAWSIntegrationRole"
 }
@@ -30,3 +30,8 @@ provider "aws" {
 }
 
 provider "datadog" {}
+
+resource "datadog_integration_aws" "python_memory_leak" {
+  account_id = var.aws_account_id
+  role_name  = var.datadog_aws_integration_role
+}
