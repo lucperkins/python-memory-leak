@@ -23,3 +23,7 @@ provider "datadog" {}
 variable "aws_account_id" {
   type = string
 }
+
+variable "datadog_aws_integration_external_id" {
+  type = string
+}
