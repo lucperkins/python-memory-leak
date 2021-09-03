@@ -8,20 +8,35 @@ from flask import Flask, jsonify, request, Response
 app = Flask(__name__)
 
 
+# Use this to burn CPU artificially
+def fibonacci(n: int) -> int:
+    if n <= 1:
+        return n
+    else:
+        return(fibonacci(n-1) + fibonacci(n-2))
+
+
+def burn_cpu(max_time: int) -> None:
+    start_time = time.time()
+
+    n = 0
+
+    while (time.time() - start_time) < max_time:
+        _value = fibonacci(n)
+        n += 1
+
+
 class Cache(object):
     def __init__(self) -> None:
-        self.stagger = int(os.environ['STAGGER'])
+        self.stagger = int(os.environ['STAGGER_SECONDS'])
         self.cache = {}
 
-    def stagger(self):
-        time.sleep(self.stagger)
-
     def get(self, key: str) -> Any:
-        self.stagger()
+        burn_cpu(self.stagger)
         return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
-        self.stagger()
+        burn_cpu(self.stagger)
         self.cache[key] = value
 
     def info(self) -> dict:
@@ -64,4 +79,6 @@ def info_endpoint():
 
 
 if __name__ == '__main__':
+    sys.setswitchinterval(sys.maxsize)
+
     app.run()
