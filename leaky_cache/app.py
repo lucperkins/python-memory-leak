@@ -64,4 +64,6 @@ def info_endpoint():
 
 
 if __name__ == '__main__':
+    sys.setswitchinterval(sys.maxsize)
+
     app.run()
