@@ -1,0 +1,4 @@
+ddtrace==0.51.2
+expiringdict==1.2.1
+Flask==2.0.1
+python-json-logger==2.0.2

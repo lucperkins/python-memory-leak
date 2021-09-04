@@ -17,69 +17,70 @@ services:
       - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
     labels:
       com.datadoghq.ad.logs: '[{"source": "agent", "service": "agent"}]'
-  leaky_cache:
-    container_name: leaky-cache
+  cache_app_version_0_1_0:
+    container_name: cache-app-v0.1.0
     build:
-      context: leaky_cache
+      context: v0.1.0
     environment:
       - STAGGER_SECONDS=1
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8080
-      - DD_SERVICE=leaky-cache
+      - CACHE_MAX_ITEMS=1000
+      - CACHE_MAX_AGE_SECS=60
+      - DD_SERVICE=cache-app-v0.1.0
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
       - DD_PROFILING_HEAP_ENABLED=true
-      - DD_VERSION=1.0
+      - DD_VERSION=0.1.0
     ports:
       - "8080:8080"
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "leaky-cache"}]'
-  well_behaved_cache:
-    container_name: well-behaved-cache
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "cache-app-v0.1.0"}]'
+  cache_app_version_0_1_1:
+    container_name: cache-app-v0.1.1
     build:
-      context: well_behaved_cache
+      context: v0.1.1
     environment:
-      - STAGGER_SECONDS=1
-      - CACHE_MAX_ITEMS=1000
-      - CACHE_MAX_AGE_SECS=60
       - FLASK_DEBUG=1
       - FLASK_RUN_PORT=8081
-      - DD_SERVICE=well-behaved-cache
+      - CACHE_MAX_ITEMS=1000
+      - CACHE_MAX_AGE_SECS=60
+      - DD_SERVICE=cache-app-v0.1.1
       - DD_AGENT_HOST=agent
       - DD_LOGS_INJECTION=true
       - DD_TRACE_ANALYTICS_ENABLED=true
       - DD_PROFILING_ENABLED=true
       - DD_PROFILING_HEAP_ENABLED=true
-      - DD_VERSION=1.0
+      - DD_VERSION=0.1.1
     ports:
       - "8081:8081"
     depends_on:
       - agent
     labels:
-      com.datadoghq.ad.logs: '[{"source": "python", "service": "well-behaved-cache"}]'
-  leaky_cache_service_client:
+      com.datadoghq.ad.logs: '[{"source": "python", "service": "cache-app-v0.1.1"}]'
+  v0_1_0_cache_service_client:
     build:
       context: client
     deploy:
       replicas: 10
     environment:
-      - API_HOST=leaky_cache
+      - API_HOST=cache_app_version_0_1_0
       - API_PORT=8080
       - PAYLOAD_SIZE=10000
     depends_on:
-      - leaky_cache
-  well_behaved_cache_service_client:
+      - cache_app_version_0_1_0
+  v0_1_1_cache_service_client:
     build:
       context: client
     deploy:
       replicas: 10
     environment:
-      - API_HOST=well_behaved_cache
+      - API_HOST=cache_app_version_0_1_1
       - API_PORT=8081
       - PAYLOAD_SIZE=10000
     depends_on:
-      - well_behaved_cache
+      - cache_app_version_0_1_1

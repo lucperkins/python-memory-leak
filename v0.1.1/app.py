@@ -9,39 +9,16 @@ from flask import Flask, jsonify, request, Response
 app = Flask(__name__)
 
 
-# Use this to burn CPU artificially
-def fibonacci(n: int) -> int:
-    if n <= 1:
-        return n
-    else:
-        return(fibonacci(n-1) + fibonacci(n-2))
-
-
-def burn_cpu(max_time: int) -> None:
-    start_time = time.time()
-
-    n = 0
-
-    while (time.time() - start_time) < max_time:
-        _value = fibonacci(n)
-        n += 1
-
-
 class Cache(object):
     def __init__(self) -> None:
-        self.stagger = int(os.environ['STAGGER_SECONDS'])
-
         max_items = int(os.environ['CACHE_MAX_ITEMS'])
         max_age = int(os.environ['CACHE_MAX_AGE_SECS'])
         self.cache = ExpiringDict(max_len=max_items, max_age_seconds=max_age)
 
     def get(self, key: str) -> Any:
-        burn_cpu(self.stagger)
-        self.stagger()
         return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
-        burn_cpu(self.stagger)
         self.cache[key] = value
 
     def info(self) -> dict:

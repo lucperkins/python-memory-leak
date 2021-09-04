@@ -3,6 +3,7 @@ import sys
 import time
 from typing import Any
 
+from expiringdict import ExpiringDict
 from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
@@ -29,7 +30,9 @@ def burn_cpu(max_time: int) -> None:
 class Cache(object):
     def __init__(self) -> None:
         self.stagger = int(os.environ['STAGGER_SECONDS'])
-        self.cache = {}
+        max_items = int(os.environ['CACHE_MAX_ITEMS'])
+        max_age = int(os.environ['CACHE_MAX_AGE_SECS'])
+        self.cache = ExpiringDict(max_len=max_items, max_age_seconds=max_age)
 
     def get(self, key: str) -> Any:
         burn_cpu(self.stagger)
