@@ -1,6 +1,9 @@
 # Virtualenv
 __pycache__/
 venv/
+bin/
+include/
+lib/
 
 # C extension build artifacts
 *.pyc
